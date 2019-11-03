@@ -40,8 +40,13 @@ def main():
                 p["key835"] = d
                 deviceKey = d.decode("hex")
                 plistlib.writePlist(p, args[1])
+
+        if not p.has_key("ios102key"):
+            p["ios102key"] = Keybag.getBackupKey(p, p.get("password", ""), True).encode("hex")
+            plistlib.writePlist(p, args[1])
+        key = p["ios102key"].decode("hex")
         
-        kb = Keybag.createWithBackupManifest(p, p.get("password",""), deviceKey)
+        kb = Keybag.createWithBackupManifest(p, p.get("password",""), deviceKey, True, key)
         if not kb:
             return
         k = Keychain4(args[0], kb)

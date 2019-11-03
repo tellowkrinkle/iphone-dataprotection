@@ -128,13 +128,18 @@ class Keybag(object):
         return kb
     
     @staticmethod
-    def createWithBackupManifest(manifest, password, deviceKey=None, ios102=False):
+    def createWithBackupManifest(manifest, password, deviceKey=None, ios102=False, key=None):
         kb = Keybag(manifest["BackupKeyBag"].data)
         kb.deviceKey = deviceKey
-        if not kb.unlockBackupKeybagWithPasscode(password, ios102=ios102):
+        if not kb.unlockBackupKeybagWithPasscode(password, ios102=ios102, key=key):
             print "Cannot decrypt backup keybag. Wrong password ?"
             return
         return kb
+
+    @staticmethod
+    def getBackupKey(manifest, passcode, ios102=True):
+        kb = Keybag(manifest["BackupKeyBag"].data)
+        return kb.getPasscodekeyFromPasscode(passcode, ios102=ios102)
     
     def isBackupKeybag(self):
         return self.type == BACKUP_KEYBAG
@@ -199,11 +204,13 @@ class Keybag(object):
             #Warning, need to run derivation on device with this result
             return PBKDF2(passcode, self.attrs["SALT"], iterations=1).read(32)
     
-    def unlockBackupKeybagWithPasscode(self, passcode, ios102=False):
+    def unlockBackupKeybagWithPasscode(self, passcode, ios102=False, key=None):
         if self.type != BACKUP_KEYBAG and self.type != OTA_KEYBAG:
             print "unlockBackupKeybagWithPasscode: not a backup keybag"
             return False
-        return self.unlockWithPasscodeKey(self.getPasscodekeyFromPasscode(passcode, ios102=ios102))
+        if key is None:
+            key = self.getPasscodekeyFromPasscode(passcode, ios102=ios102)
+        return self.unlockWithPasscodeKey(key)
 
     def unlockAlwaysAccessible(self):
         for classkey in self.classKeys.values():
