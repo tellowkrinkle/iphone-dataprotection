@@ -104,10 +104,10 @@ class Keychain4(Keychain):
             der = gcm_decrypt(unwrappedkey, "", encrypted_data, "", blob[-16:])
             stuff = der_decode(der)[0]
             rval = {}
-            for k,v in stuff:
-              k = str(k)
+            for thing in stuff:
+              k = str(thing[0])
               # NB - this is binary and may not be valid UTF8 data
-              v = str(v)
+              v = str(thing[1])
               rval[k] = v
             return rval
 
